@@ -5,10 +5,24 @@ import PetsList from '../components/PetsList'
 import NewPetModal from '../components/NewPetModal'
 import Loader from '../components/Loader'
 
+// MAke a grapgql query to fetch all the pets
+const getAllPetsQuery = gql`
+  query getAllPets {
+    pets {
+      id
+      name
+    }
+  }
+`;
 
 export default function Pets () {
   const [modal, setModal] = useState(false)
+  // Get all the pets with useQuery hook and store in a state
+  const { data, loading, error } = useQuery(getAllPetsQuery);
+  console.log(loading);
+  console.log(data);
 
+  if (loading) return '<div></div>';
 
   const onSubmit = input => {
     setModal(false)
@@ -32,7 +46,7 @@ export default function Pets () {
         </div>
       </section>
       <section>
-        <PetsList />
+        <PetsList pets={data.pets} />
       </section>
     </div>
   )
