@@ -6,26 +6,52 @@ import NewPetModal from '../components/NewPetModal'
 import Loader from '../components/Loader'
 
 // MAke a grapgql query to fetch all the pets
-const getAllPetsQuery = gql`
+const ALL_PETS = gql`
   query getAllPets {
     pets {
       id
       name
+      type
+      img
     }
   }
 `;
 
-export default function Pets () {
+// GraphQL mutation for adding a pet
+const ADD_PET = gql`
+  mutation createAPet($newPet: NewPetInput!) {
+    addPet(input: $newPet) {
+      id
+      name
+      type
+      img
+    }
+  }
+`;
+
+export default function Pets() {
+  // Causes the component to rerender when any of the states below changes
   const [modal, setModal] = useState(false)
   // Get all the pets with useQuery hook and store in a state
-  const { data, loading, error } = useQuery(getAllPetsQuery);
-  console.log(loading);
-  console.log(data);
+  const { data, loading, error } = useQuery(ALL_PETS);
+  console.log('Loading is ', loading);
+  console.log('Error is ',error);
+  console.log('Data is ', data);
 
-  if (loading) return '<div></div>';
+  // UseMutation hook for adding a pet
+  // useMutation hook does not mutate, instead we need to call the first function below (createPet) to execute a mutation
+  const [createPet, newPet] = useMutation(ADD_PET);
+  console.log('Loading in mutation is ', newPet.loading);
+  console.log('data in mutation is ', newPet.data);
+  console.log('error in mutation is ', newPet.error);
+
+  if (loading || newPet.loading) return <Loader />;
+  if (error || newPet.error) return <p>Error !!</p>;
 
   const onSubmit = input => {
-    setModal(false)
+    console.log(input);
+    setModal(false);
+    createPet({variables: { newPet: input }});
   }
   
   if (modal) {
