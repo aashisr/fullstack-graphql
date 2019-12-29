@@ -40,7 +40,18 @@ export default function Pets() {
 
   // UseMutation hook for adding a pet
   // useMutation hook does not mutate, instead we need to call the first function below (createPet) to execute a mutation
-  const [createPet, newPet] = useMutation(ADD_PET);
+  const [createPet, newPet] = useMutation(ADD_PET, {
+    // Update the cache so that it rerenders the view once the data is added
+    update(cache, { data: { addPet } }) {
+      // Find the query from cache to update the cache
+      const { pets } = cache.readQuery({ query: ALL_PETS });
+      // Update the query in the cache 
+      cache.writeQuery({
+          query: ALL_PETS,
+          data: { pets: [addPet, ...pets] }
+      });
+    }
+  });
   console.log('Loading in mutation is ', newPet.loading);
   console.log('data in mutation is ', newPet.data);
   console.log('error in mutation is ', newPet.error);
@@ -51,7 +62,8 @@ export default function Pets() {
   const onSubmit = input => {
     console.log(input);
     setModal(false);
-    createPet({variables: { newPet: input }});
+    createPet({ variables: { newPet: input } });
+    console.log('newPet is ', newPet);
   }
   
   if (modal) {
